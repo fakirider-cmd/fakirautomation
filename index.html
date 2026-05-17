@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fakir Automation — Automatisierte Kundenreaktivierung</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --dark: #111111;
+  --darker: #0d0d0d;
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --gold-dark: #9a7a2e;
+  --white: #f5f0e8;
+  --gray: #888880;
+  --border: rgba(201,168,76,0.2);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--gold); }
+
+/* NOISE TEXTURE */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 24px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 40px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--gray);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover { color: var(--gold); }
+
+.nav-lang {
+  display: flex;
+  gap: 12px;
+}
+
+.lang-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--gray);
+  padding: 6px 14px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.lang-btn.active, .lang-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 120px 60px 80px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(201,168,76,0.04) 0%, transparent 60%);
+}
+
+.hero-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, var(--gold));
+  opacity: 0.4;
+}
+
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+}
+
+.hero-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--border);
+  padding: 8px 20px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 900;
+  line-height: 1.0;
+  margin-bottom: 30px;
+  animation: fadeUp 0.8s ease 0.2s forwards;
+  opacity: 0;
+}
+
+.hero-title .gold { color: var(--gold); }
+
+.hero-subtitle {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 0 auto 50px;
+  animation: fadeUp 0.8s ease 0.4s forwards;
+  opacity: 0;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  animation: fadeUp 0.8s ease 0.6s forwards;
+  opacity: 0;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--black);
+  padding: 16px 40px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(201,168,76,0.3);
+}
+
+.btn-secondary {
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 16px 40px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 400;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 80px;
+  padding-top: 60px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp 0.8s ease 0.8s forwards;
+  opacity: 0;
+}
+
+.stat-item { text-align: center; }
+
+.stat-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  color: var(--gold);
+  display: block;
+}
+
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+/* SECTIONS */
+section {
+  padding: 120px 60px;
+  position: relative;
+}
+
+.section-tag {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.section-subtitle {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.8;
+  max-width: 600px;
+}
+
+/* SERVICES */
+.services {
+  background: var(--darker);
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 80px;
+}
+
+.service-card {
+  background: var(--dark);
+  padding: 60px 50px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s;
+  cursor: default;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform 0.4s;
+}
+
+.service-card:hover::before { transform: scaleX(1); }
+
+.service-card:hover {
+  background: #161616;
+  transform: translateY(-4px);
+}
+
+.service-icon {
+  font-size: 40px;
+  margin-bottom: 24px;
+  display: block;
+}
+
+.service-number {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-family: 'Playfair Display', serif;
+  font-size: 80px;
+  color: rgba(201,168,76,0.06);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.service-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  margin-bottom: 16px;
+  color: var(--white);
+}
+
+.service-desc {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.8;
+  margin-bottom: 30px;
+}
+
+.service-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-features li {
+  font-size: 13px;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-features li::before {
+  content: '—';
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* HOW IT WORKS */
+.how {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  margin-top: 80px;
+  position: relative;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dark), var(--gold), var(--gold-dark), transparent);
+  opacity: 0.4;
+}
+
+.step {
+  text-align: center;
+  position: relative;
+}
+
+.step-number {
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--gold);
+  background: var(--black);
+  position: relative;
+  z-index: 2;
+}
+
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.7;
+}
+
+/* ABOUT */
+.about {
+  background: var(--darker);
+}
+
+.about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-image {
+  position: relative;
+}
+
+.about-img-box {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, #1a1a1a, #111);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-img-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,0.05), transparent);
+}
+
+.about-placeholder {
+  font-family: 'Playfair Display', serif;
+  font-size: 80px;
+  color: rgba(201,168,76,0.2);
+}
+
+.about-gold-line {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 60%;
+  height: 60%;
+  border-right: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  opacity: 0.3;
+}
+
+.about-content { }
+
+.about-text {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.9;
+  margin-bottom: 20px;
+}
+
+.about-highlight {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--white);
+  line-height: 1.5;
+  border-left: 2px solid var(--gold);
+  padding-left: 24px;
+  margin: 40px 0;
+}
+
+/* RESULTS */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 80px;
+}
+
+.result-card {
+  background: var(--dark);
+  padding: 50px 40px;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.result-card:hover { border-bottom-color: var(--gold); }
+
+.result-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 56px;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.result-title {
+  font-size: 14px;
+  color: var(--white);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.result-desc {
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* CONTACT */
+.contact {
+  background: var(--darker);
+}
+
+.contact-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contact-info { padding-top: 20px; }
+
+.contact-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.contact-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.contact-value {
+  font-size: 16px;
+  color: var(--white);
+}
+
+.contact-form { display: flex; flex-direction: column; gap: 20px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+
+.form-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+.form-input, .form-select, .form-textarea {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 14px 18px;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  transition: border-color 0.3s;
+  outline: none;
+  width: 100%;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold);
+}
+
+.form-select option { background: var(--dark); }
+
+.form-textarea { resize: vertical; min-height: 120px; }
+
+.form-submit {
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  padding: 18px 40px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Montserrat', sans-serif;
+  align-self: flex-start;
+}
+
+.form-submit:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(201,168,76,0.3);
+}
+
+/* FOOTER */
+footer {
+  background: var(--black);
+  padding: 60px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.footer-links {
+  display: flex;
+  gap: 30px;
+}
+
+.footer-links a {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gray);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--gold); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* GOLD DIVIDER */
+.gold-divider {
+  width: 60px;
+  height: 2px;
+  background: var(--gold);
+  margin: 24px 0;
+}
+
+/* LANGUAGE */
+.lang-de, .lang-en { display: none; }
+.lang-de.active, .lang-en.active { display: block; }
+.lang-de-inline, .lang-en-inline { display: none; }
+.lang-de-inline.active, .lang-en-inline.active { display: inline; }
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Fakir Automation</a>
+  <ul class="nav-links">
+    <li><a href="#services"><span class="lang-de-inline active">Leistungen</span><span class="lang-en-inline">Services</span></a></li>
+    <li><a href="#how"><span class="lang-de-inline active">Ablauf</span><span class="lang-en-inline">Process</span></a></li>
+    <li><a href="#about"><span class="lang-de-inline active">Über mich</span><span class="lang-en-inline">About</span></a></li>
+    <li><a href="#results"><span class="lang-de-inline active">Ergebnisse</span><span class="lang-en-inline">Results</span></a></li>
+    <li><a href="#contact"><span class="lang-de-inline active">Kontakt</span><span class="lang-en-inline">Contact</span></a></li>
+  </ul>
+  <div class="nav-lang">
+    <button class="lang-btn active" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-line"></div>
+  <div class="hero-content">
+    <div class="hero-tag">
+      <span class="lang-de-inline active">Automatisierte Kundenreaktivierung</span>
+      <span class="lang-en-inline">Automated Customer Reactivation</span>
+    </div>
+    <h1 class="hero-title">
+      <span class="lang-de-inline active">Ihre inaktiven<br>Kunden kommen<br><span class="gold">zurück.</span></span>
+      <span class="lang-en-inline">Your inactive<br>customers come<br><span class="gold">back.</span></span>
+    </h1>
+    <p class="hero-subtitle">
+      <span class="lang-de-inline active">Vollautomatisch. Personalisiert. DSGVO-konform.<br>Für lokale Unternehmen in ganz Deutschland.</span>
+      <span class="lang-en-inline">Fully automated. Personalized. GDPR-compliant.<br>For local businesses across Germany.</span>
+    </p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn-primary">
+        <span class="lang-de-inline active">Kostenlose Analyse</span>
+        <span class="lang-en-inline">Free Analysis</span>
+      </a>
+      <a href="#services" class="btn-secondary">
+        <span class="lang-de-inline active">Mehr erfahren</span>
+        <span class="lang-en-inline">Learn more</span>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">500+</span>
+        <span class="stat-label">
+          <span class="lang-de-inline active">Emails pro Kampagne</span>
+          <span class="lang-en-inline">Emails per Campaign</span>
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">10%</span>
+        <span class="stat-label">
+          <span class="lang-de-inline active">Durchschnittliche Rücklaufquote</span>
+          <span class="lang-en-inline">Average Return Rate</span>
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">
+          <span class="lang-de-inline active">Geld-zurück-Garantie</span>
+          <span class="lang-en-inline">Money-back Guarantee</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="fade-up">
+      <span class="section-tag">
+        <span class="lang-de-inline active">Unsere Leistungen</span>
+        <span class="lang-en-inline">Our Services</span>
+      </span>
+      <h2 class="section-title">
+        <span class="lang-de-inline active">Jede Branche.<br>Eine Lösung.</span>
+        <span class="lang-en-inline">Every Industry.<br>One Solution.</span>
+      </h2>
+      <div class="gold-divider"></div>
+      <p class="section-subtitle">
+        <span class="lang-de-inline active">Wir reaktivieren inaktive Kunden für Unternehmen in ganz Deutschland — vollautomatisch, personalisiert, ohne Aufwand für Ihr Team.</span>
+        <span class="lang-en-inline">We reactivate inactive customers for businesses across Germany — fully automated, personalized, without effort for your team.</span>
+      </p>
+    </div>
+
+    <!-- Industries Grid -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:40px;margin-bottom:2px;" class="fade-up">
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🦷</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Zahnarztpraxen</span><span class="lang-en-inline">Dental Practices</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Recall-Kampagnen</span><span class="lang-en-inline">Recall campaigns</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🚗</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Autohäuser</span><span class="lang-en-inline">Car Dealerships</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Inspektion + Reifen</span><span class="lang-en-inline">Inspection + Tires</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">💈</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Friseursalons</span><span class="lang-en-inline">Hair Salons</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Terminreaktivierung</span><span class="lang-en-inline">Appointment reactivation</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🔧</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Handwerker</span><span class="lang-en-inline">Tradespeople</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Kundenbindung</span><span class="lang-en-inline">Customer retention</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:60px;" class="fade-up">
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🏋️</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Fitnessstudios</span><span class="lang-en-inline">Gyms</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Mitglieder zurückgewinnen</span><span class="lang-en-inline">Member reactivation</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🏥</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Arztpraxen</span><span class="lang-en-inline">Medical Practices</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Vorsorge-Erinnerungen</span><span class="lang-en-inline">Prevention reminders</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">🍽️</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">Restaurants</span><span class="lang-en-inline">Restaurants</span></div>
+        <div style="font-size:12px;color:var(--gray);"><span class="lang-de-inline active">Stammkunden reaktivieren</span><span class="lang-en-inline">Regular customer reactivation</span></div>
+      </div>
+      <div style="background:var(--dark);padding:30px;text-align:center;border-bottom:2px solid transparent;transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">
+        <div style="font-size:32px;margin-bottom:12px;">✨</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:8px;"><span class="lang-de-inline active">& viele mehr</span><span class="lang-en-inline">& many more</span></div>
+        <div style="font-size:12px;color:var(--gold);"><span class="lang-de-inline active">Jede Branche möglich</span><span class="lang-en-inline">Any industry possible</span></div>
+      </div>
+    </div>
+
+    <div class="services-grid fade-up">
+      <!-- Zahnarzt Beispiel -->
+      <div class="service-card">
+        <span class="service-number">01</span>
+        <span class="service-icon">🦷</span>
+        <h3 class="service-title">
+          <span class="lang-de-inline active">Beispiel: Zahnarztpraxis</span>
+          <span class="lang-en-inline">Example: Dental Practice</span>
+        </h3>
+        <p class="service-desc">
+          <span class="lang-de-inline active">500 inaktive Patienten angeschrieben → 10% kommen zurück = 50 neue Termine → bei 150€ pro Behandlung = <strong style="color:var(--gold)">7.500€ zusätzlicher Umsatz.</strong> Investition: 697€ einmalig.</span>
+          <span class="lang-en-inline">500 inactive patients contacted → 10% return = 50 new appointments → at €150 per treatment = <strong style="color:var(--gold)">€7,500 additional revenue.</strong> Investment: €697 one-time.</span>
+        </p>
+        <ul class="service-features">
+          <li><span class="lang-de-inline active">Personalisierte Recall-Emails</span><span class="lang-en-inline">Personalized recall emails</span></li>
+          <li><span class="lang-de-inline active">Letzte Behandlung erwähnt</span><span class="lang-en-inline">Last treatment mentioned</span></li>
+          <li><span class="lang-de-inline active">DSGVO-konformer Versand</span><span class="lang-en-inline">GDPR-compliant sending</span></li>
+          <li><span class="lang-de-inline active">Ab 297€ einmalig</span><span class="lang-en-inline">From €297 one-time</span></li>
+        </ul>
+      </div>
+      <!-- Autohaus Beispiel -->
+      <div class="service-card">
+        <span class="service-number">02</span>
+        <span class="service-icon">🚗</span>
+        <h3 class="service-title">
+          <span class="lang-de-inline active">Beispiel: Autohaus</span>
+          <span class="lang-en-inline">Example: Car Dealership</span>
+        </h3>
+        <p class="service-desc">
+          <span class="lang-de-inline active">500 inaktive Kunden angeschrieben → Inspektion + Reifenwechsel → 10% kommen zurück = 50 Termine → bei 500€ pro Inspektion = <strong style="color:var(--gold)">25.000€ zusätzlicher Umsatz.</strong> Investition: 897€ einmalig.</span>
+          <span class="lang-en-inline">500 inactive customers contacted → inspection + tire change → 10% return = 50 appointments → at €500 per inspection = <strong style="color:var(--gold)">€25,000 additional revenue.</strong> Investment: €897 one-time.</span>
+        </p>
+        <ul class="service-features">
+          <li><span class="lang-de-inline active">Inspektions-Reaktivierung</span><span class="lang-en-inline">Inspection reactivation</span></li>
+          <li><span class="lang-de-inline active">Reifenwechsel-Erinnerung</span><span class="lang-en-inline">Tire change reminder</span></li>
+          <li><span class="lang-de-inline active">Fahrzeug personalisiert</span><span class="lang-en-inline">Vehicle personalized</span></li>
+          <li><span class="lang-de-inline active">Ab 397€ einmalig</span><span class="lang-en-inline">From €397 one-time</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="padding:120px 60px;">
+  <div class="how fade-up">
+    <div style="text-align:center;margin-bottom:20px;">
+      <span class="section-tag">
+        <span class="lang-de-inline active">Der Ablauf</span>
+        <span class="lang-en-inline">The Process</span>
+      </span>
+      <h2 class="section-title">
+        <span class="lang-de-inline active">Einfach. Schnell. Effektiv.</span>
+        <span class="lang-en-inline">Simple. Fast. Effective.</span>
+      </h2>
+      <div class="gold-divider" style="margin:24px auto;"></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">01</div>
+        <h4 class="step-title">
+          <span class="lang-de-inline active">Kundenliste</span>
+          <span class="lang-en-inline">Customer List</span>
+        </h4>
+        <p class="step-desc">
+          <span class="lang-de-inline active">Sie liefern uns Ihre Kundenliste als Excel-Datei — Namen, Email und letzter Besuch.</span>
+          <span class="lang-en-inline">You provide your customer list as an Excel file — names, email and last visit.</span>
+        </p>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <h4 class="step-title">
+          <span class="lang-de-inline active">KI schreibt</span>
+          <span class="lang-en-inline">AI Writes</span>
+        </h4>
+        <p class="step-desc">
+          <span class="lang-de-inline active">Das System erstellt für jeden Kunden eine individuelle, persönliche Nachricht.</span>
+          <span class="lang-en-inline">The system creates an individual, personal message for each customer.</span>
+        </p>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <h4 class="step-title">
+          <span class="lang-de-inline active">Versand</span>
+          <span class="lang-en-inline">Sending</span>
+        </h4>
+        <p class="step-desc">
+          <span class="lang-de-inline active">Professioneller, DSGVO-konformer Versand — ohne Zugriff auf Ihr Postfach.</span>
+          <span class="lang-en-inline">Professional, GDPR-compliant sending — without access to your mailbox.</span>
+        </p>
+      </div>
+      <div class="step">
+        <div class="step-number">04</div>
+        <h4 class="step-title">
+          <span class="lang-de-inline active">Ergebnisse</span>
+          <span class="lang-en-inline">Results</span>
+        </h4>
+        <p class="step-desc">
+          <span class="lang-de-inline active">Sie sehen wer geöffnet hat, wer geantwortet hat — vollständige Transparenz.</span>
+          <span class="lang-en-inline">You see who opened, who responded — complete transparency.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-inner">
+    <div class="about-image fade-up">
+      <div class="about-img-box">
+        <span class="about-placeholder">ZF</span>
+      </div>
+      <div class="about-gold-line"></div>
+    </div>
+    <div class="about-content fade-up">
+      <span class="section-tag">
+        <span class="lang-de-inline active">Über mich</span>
+        <span class="lang-en-inline">About Me</span>
+      </span>
+      <h2 class="section-title">
+        <span class="lang-de-inline active">Zakaria Fakir</span>
+        <span class="lang-en-inline">Zakaria Fakir</span>
+      </h2>
+      <div class="gold-divider"></div>
+      <div class="about-highlight">
+        <span class="lang-de-inline active">"Ich helfe lokalen Unternehmen in ganz Deutschland dabei, ihre bestehenden Kunden automatisch zurückzugewinnen."</span>
+        <span class="lang-en-inline">"I help local businesses across Germany automatically win back their existing customers."</span>
+      </div>
+      <p class="about-text">
+        <span class="lang-de-inline active">Als Automatisierungsexperte aus Aschaffenburg entwickle ich maßgeschneiderte Systeme die lokalen Unternehmen in ganz Deutschland helfen, inaktive Kunden systematisch zurückzugewinnen.</span>
+        <span class="lang-en-inline">As an automation expert from Aschaffenburg, I develop tailored systems that help local businesses across Germany systematically win back inactive customers.</span>
+      </p>
+      <p class="about-text">
+        <span class="lang-de-inline active">Mein Ansatz: Keine langen Verträge, keine komplizierten Systeme — nur messbare Ergebnisse. Vollautomatisch, DSGVO-konform, und ohne zusätzlichen Aufwand für Ihr Team. Für jede Branche, überall in Deutschland.</span>
+        <span class="lang-en-inline">My approach: No long contracts, no complicated systems — only measurable results. Fully automated, GDPR-compliant, and without additional effort for your team. For every industry, anywhere in Germany.</span>
+      </p>
+      <a href="#contact" class="btn-primary" style="display:inline-block;margin-top:30px;">
+        <span class="lang-de-inline active">Gespräch vereinbaren</span>
+        <span class="lang-en-inline">Schedule a Call</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" style="padding:120px 60px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="fade-up" style="text-align:center;">
+      <span class="section-tag">
+        <span class="lang-de-inline active">Ergebnisse</span>
+        <span class="lang-en-inline">Results</span>
+      </span>
+      <h2 class="section-title">
+        <span class="lang-de-inline active">Zahlen die überzeugen.</span>
+        <span class="lang-en-inline">Numbers that convince.</span>
+      </h2>
+      <div class="gold-divider" style="margin:24px auto;"></div>
+    </div>
+    <div class="results-grid fade-up">
+      <div class="result-card">
+        <span class="result-number">7.500€</span>
+        <div class="result-title">
+          <span class="lang-de-inline active">Potenzial pro Zahnarzt-Kampagne</span>
+          <span class="lang-en-inline">Potential per Dental Campaign</span>
+        </div>
+        <p class="result-desc">
+          <span class="lang-de-inline active">Bei 500 Patienten und 10% Rücklaufquote</span>
+          <span class="lang-en-inline">With 500 patients and 10% return rate</span>
+        </p>
+      </div>
+      <div class="result-card">
+        <span class="result-number">25.000€</span>
+        <div class="result-title">
+          <span class="lang-de-inline active">Potenzial pro Autohaus-Kampagne</span>
+          <span class="lang-en-inline">Potential per Dealership Campaign</span>
+        </div>
+        <p class="result-desc">
+          <span class="lang-de-inline active">Bei 500 Kunden und Inspektionen + Reifenwechsel</span>
+          <span class="lang-en-inline">With 500 customers and inspections + tire changes</span>
+        </p>
+      </div>
+      <div class="result-card">
+        <span class="result-number">5 Min</span>
+        <div class="result-title">
+          <span class="lang-de-inline active">Aufwand für Sie</span>
+          <span class="lang-en-inline">Effort for You</span>
+        </div>
+        <p class="result-desc">
+          <span class="lang-de-inline active">Kundenliste liefern — den Rest übernehmen wir</span>
+          <span class="lang-en-inline">Provide customer list — we handle the rest</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-inner">
+    <div class="contact-info fade-up">
+      <span class="section-tag">
+        <span class="lang-de-inline active">Kontakt</span>
+        <span class="lang-en-inline">Contact</span>
+      </span>
+      <h2 class="section-title">
+        <span class="lang-de-inline active">Kostenlose<br>Analyse anfordern.</span>
+        <span class="lang-en-inline">Request a Free<br>Analysis.</span>
+      </h2>
+      <div class="gold-divider"></div>
+      <p class="section-subtitle" style="margin-bottom:50px;">
+        <span class="lang-de-inline active">Ich analysiere kostenlos Ihren Kundenstamm und zeige Ihnen wie viel Potenzial darin steckt. Keine Verpflichtung, kein Risiko.</span>
+        <span class="lang-en-inline">I will analyze your customer base for free and show you how much potential it holds. No obligation, no risk.</span>
+      </p>
+      <div class="contact-detail">
+        <span class="contact-label">Email</span>
+        <span class="contact-value">info@fakirautomation.de</span>
+      </div>
+      <div class="contact-detail">
+        <span class="contact-label">
+          <span class="lang-de-inline active">Standort</span>
+          <span class="lang-en-inline">Location</span>
+        </span>
+        <span class="contact-value">Aschaffenburg, Deutschland</span>
+      </div>
+      <div class="contact-detail">
+        <span class="contact-label">
+          <span class="lang-de-inline active">Reaktionszeit</span>
+          <span class="lang-en-inline">Response Time</span>
+        </span>
+        <span class="contact-value">
+          <span class="lang-de-inline active">Innerhalb von 24 Stunden</span>
+          <span class="lang-en-inline">Within 24 hours</span>
+        </span>
+      </div>
+    </div>
+    <div class="contact-form fade-up">
+      <div class="form-group">
+        <label class="form-label">
+          <span class="lang-de-inline active">Name</span>
+          <span class="lang-en-inline">Name</span>
+        </label>
+        <input type="text" class="form-input" placeholder="Dr. Max Mustermann">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" placeholder="info@praxis-mustermann.de">
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          <span class="lang-de-inline active">Branche</span>
+          <span class="lang-en-inline">Industry</span>
+        </label>
+        <input type="text" class="form-input" placeholder="z.B. Zahnarzt, Autohaus, Friseur, Handwerker...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          <span class="lang-de-inline active">Nachricht</span>
+          <span class="lang-en-inline">Message</span>
+        </label>
+        <textarea class="form-textarea" placeholder="Wie viele inaktive Kunden haben Sie ungefähr?"></textarea>
+      </div>
+      <button class="form-submit">
+        <span class="lang-de-inline active">Analyse anfordern</span>
+        <span class="lang-en-inline">Request Analysis</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Fakir Automation</span>
+  <span class="footer-text">© 2026 Fakir Automation — Deutschland</span>
+  <div class="footer-links">
+    <a href="#">
+      <span class="lang-de-inline active">Datenschutz</span>
+      <span class="lang-en-inline">Privacy</span>
+    </a>
+    <a href="#">
+      <span class="lang-de-inline active">Impressum</span>
+      <span class="lang-en-inline">Imprint</span>
+    </a>
+  </div>
+</footer>
+
+<script>
+// Language Switch
+function setLang(lang) {
+  document.querySelectorAll('.lang-de-inline, .lang-en-inline').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.lang-' + lang + '-inline').forEach(el => el.classList.add('active'));
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Scroll Animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Form Submit
+document.querySelector('.form-submit').addEventListener('click', function() {
+  this.textContent = '✓ Gesendet!';
+  this.style.background = '#10b981';
+  setTimeout(() => {
+    this.textContent = 'Analyse anfordern';
+    this.style.background = '';
+  }, 3000);
+});
+</script>
+</body>
+</html>
