@@ -693,11 +693,182 @@ footer {
   margin: 24px 0;
 }
 
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--gold);
+  transition: all 0.3s;
+}
+
+/* MOBILE MENU */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 65px;
+  left: 0;
+  right: 0;
+  background: rgba(10,10,10,0.98);
+  backdrop-filter: blur(20px);
+  z-index: 99;
+  flex-direction: column;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  color: var(--white);
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.3s;
+}
+.mobile-menu a:hover { color: var(--gold); }
+
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+}
+
 /* LANGUAGE */
 .lang-de, .lang-en { display: none; }
 .lang-de.active, .lang-en.active { display: block; }
 .lang-de-inline, .lang-en-inline { display: none; }
 .lang-de-inline.active, .lang-en-inline.active { display: inline; }
+@media (max-width: 768px) {
+
+  /* NAV */
+  nav {
+    padding: 16px 20px;
+  }
+  .nav-links { display: none; }
+  .nav-logo { font-size: 18px; }
+  .lang-btn { padding: 5px 10px; font-size: 10px; }
+
+  /* HERO */
+  .hero {
+    padding: 100px 24px 60px;
+    min-height: 100vh;
+  }
+  .hero-title {
+    font-size: clamp(36px, 10vw, 56px);
+    line-height: 1.1;
+  }
+  .hero-subtitle { font-size: 14px; }
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    text-align: center;
+    padding: 14px 20px;
+  }
+  .hero-stats {
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 50px;
+    padding-top: 40px;
+  }
+  .stat-number { font-size: 32px; }
+
+  /* SECTIONS */
+  section { padding: 60px 24px; }
+
+  /* SERVICES */
+  .services-grid {
+    grid-template-columns: 1fr;
+    margin-top: 40px;
+  }
+  .service-card { padding: 40px 28px; }
+  .service-title { font-size: 22px; }
+
+  /* INDUSTRIES GRID */
+  div[style*="grid-template-columns:repeat(4,1fr)"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2px !important;
+  }
+
+  /* STEPS */
+  .steps {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 40px;
+  }
+  .steps::before { display: none; }
+
+  /* ABOUT */
+  .about-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .about-img-box {
+    aspect-ratio: 4/3;
+    max-height: 280px;
+  }
+  .about-placeholder { font-size: 60px; }
+  .about-highlight { font-size: 18px; }
+  .about-text { font-size: 14px; }
+
+  /* RESULTS */
+  .results-grid {
+    grid-template-columns: 1fr;
+    margin-top: 40px;
+  }
+  .result-card { padding: 36px 24px; }
+  .result-number { font-size: 42px; }
+
+  /* CONTACT */
+  .contact-inner {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+  .contact-value { font-size: 14px; }
+
+  /* FOOTER */
+  footer {
+    padding: 30px 24px;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  .footer-links { justify-content: center; }
+
+  /* SECTION TITLES */
+  .section-title { font-size: clamp(28px, 7vw, 42px); }
+}
+
+/* ═══════════════════════════════════
+   SMALL MOBILE — max 480px
+═══════════════════════════════════ */
+@media (max-width: 480px) {
+  .hero-tag {
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+  }
+  .hero-title { font-size: clamp(32px, 9vw, 48px); }
+  .steps { grid-template-columns: 1fr; }
+  div[style*="grid-template-columns:repeat(4,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .service-card { padding: 30px 20px; }
+  nav { padding: 14px 16px; }
+}
 
 </style>
 </head>
@@ -713,11 +884,25 @@ footer {
     <li><a href="#results"><span class="lang-de-inline active">Ergebnisse</span><span class="lang-en-inline">Results</span></a></li>
     <li><a href="#contact"><span class="lang-de-inline active">Kontakt</span><span class="lang-en-inline">Contact</span></a></li>
   </ul>
-  <div class="nav-lang">
-    <button class="lang-btn active" onclick="setLang('de')">DE</button>
-    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="nav-lang">
+      <button class="lang-btn active" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#services" onclick="toggleMenu()"><span class="lang-de-inline active">Leistungen</span><span class="lang-en-inline">Services</span></a>
+  <a href="#how" onclick="toggleMenu()"><span class="lang-de-inline active">Ablauf</span><span class="lang-en-inline">Process</span></a>
+  <a href="#about" onclick="toggleMenu()"><span class="lang-de-inline active">Über mich</span><span class="lang-en-inline">About</span></a>
+  <a href="#results" onclick="toggleMenu()"><span class="lang-de-inline active">Ergebnisse</span><span class="lang-en-inline">Results</span></a>
+  <a href="#contact" onclick="toggleMenu()"><span class="lang-de-inline active">Kontakt</span><span class="lang-en-inline">Contact</span></a>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1130,6 +1315,12 @@ function setLang(lang) {
   document.querySelectorAll('.lang-' + lang + '-inline').forEach(el => el.classList.add('active'));
   document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
   event.target.classList.add('active');
+}
+
+// Mobile Menu
+function toggleMenu() {
+  const menu = document.getElementById('mobileMenu');
+  menu.classList.toggle('open');
 }
 
 // Scroll Animations
